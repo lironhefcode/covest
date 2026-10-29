@@ -32,6 +32,11 @@ const createAuth = (db: MongoDbParam) =>
           type: "string",
           defaultValue: "Not specified",
         },
+        isDemo: {
+          type: "boolean",
+          defaultValue: false,
+          input: false,
+        },
       },
     },
     secret: process.env.BETTER_AUTH_SECRET || "",

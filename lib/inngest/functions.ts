@@ -6,6 +6,9 @@ import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions"
 import { getNews, getStockChange } from "@/lib/actions/finnhub.actions"
 import { getFormattedTodayDate } from "@/lib/utils"
 import { Alert } from "@/db/models/alert"
+import { Watchlist } from "@/db/models/watchlist"
+import { Group } from "@/db/models/group"
+import { GroupMember } from "@/db/models/groupMember"
 import { PushSubscription } from "@/db/models/push-subscription"
 import { connectToDatabase } from "@/db/mongoose"
 import { sendPushNotification } from "@/lib/web-push"
@@ -329,5 +332,49 @@ export const checkPriceAlerts = inngest.createFunction(
     }
 
     return { success: true, message: `Alert check complete`, triggered: triggeredAlertDetails.length }
+  },
+)
+
+export const cleanupDemoUsers = inngest.createFunction(
+  {
+    id: "cleanup-demo-users",
+    concurrency: { limit: 1 },
+  },
+  [{ event: "app/cleanup.demo.users" }, { cron: "0 3 * * *" }],
+  async ({ step }) => {
+    const deleted = await step.run("delete-expired-demo-users", async () => {
+      const mongoose = await connectToDatabase()
+      const db = mongoose.connection.db
+      if (!db) throw new Error("Database connection not established")
+
+      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      const demoUsers = await db
+        .collection<UserDocument>("user")
+        .find({ isDemo: true, createdAt: { $lt: cutoff } }, { projection: { _id: 1 } })
+        .toArray()
+      if (demoUsers.length === 0) return 0
+
+      const objectIds = demoUsers.map((u) => u._id)
+      const userIds = objectIds.map((id) => id.toString())
+
+      // Groups created by demo users also hold the fake seeded members, so remove every member of those groups
+      const groups = await Group.find({ creatorId: { $in: userIds } }, { _id: 1 }).lean()
+      const groupIds = groups.map((g) => g._id)
+
+      await Promise.all([
+        Watchlist.deleteMany({ userId: { $in: userIds } }),
+        Alert.deleteMany({ userId: { $in: userIds } }),
+        PushSubscription.deleteMany({ userId: { $in: userIds } }),
+        GroupMember.deleteMany({ $or: [{ userId: { $in: userIds } }, { groupId: { $in: groupIds } }] }),
+        Group.deleteMany({ _id: { $in: groupIds } }),
+        db.collection("session").deleteMany({ userId: { $in: [...objectIds, ...userIds] } }),
+        db.collection("account").deleteMany({ userId: { $in: [...objectIds, ...userIds] } }),
+      ])
+      await db.collection("user").deleteMany({ _id: { $in: objectIds } })
+
+      return demoUsers.length
+    })
+
+    return { success: true, message: "Demo cleanup complete", deleted }
   },
 )

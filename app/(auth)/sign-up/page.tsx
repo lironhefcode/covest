@@ -4,6 +4,7 @@ import CountrySelectField from "@/components/forms/CountrySelectField"
 import FooterLink from "@/components/forms/FooterLink"
 import InputField from "@/components/forms/InputField"
 import SelectField from "@/components/forms/SelectField"
+import DemoButton from "@/components/DemoButton"
 
 import { Button } from "@/components/ui/button"
 import { signUpWithEmail } from "@/lib/actions/auth.actions"
@@ -131,6 +132,7 @@ const SignUp = () => {
           {isSubmitting ? "Creating..." : "Sign Up"}
         </Button>
       </form>
+      <DemoButton />
     </>
   )
 }

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import FooterLink from "@/components/forms/FooterLink"
 import InputField from "@/components/forms/InputField"
+import DemoButton from "@/components/DemoButton"
 import { Button } from "@/components/ui/button"
 import { signInWithEmail } from "@/lib/actions/auth.actions"
 
@@ -86,6 +87,7 @@ const SignIn = () => {
           {isSubmitting ? "Signing In..." : "Sign In"}
         </Button>
       </form>
+      <DemoButton />
     </>
   )
 }
