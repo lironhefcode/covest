@@ -97,6 +97,7 @@ declare global {
     preferredIndustry: string
     receiveDailyEmails: boolean
     showInvestmentToGroup: boolean
+    isDemo?: boolean
   }
 
   type UpdateUserFormData = {
@@ -266,6 +267,7 @@ declare global {
     investmentGoals: string
     riskTolerance: string
     preferredIndustry: string
+    isDemo?: boolean
   }
 
   type UserForNewsEmail = {

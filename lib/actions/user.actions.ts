@@ -14,7 +14,7 @@ export const getAllUsersForNewsEmail = async (): Promise<UserForNewsEmail[]> => 
     const user = await db
       .collection<UserDocument>("user")
       .find(
-        { receiveDailyEmails: { $eq: true }, email: { $exists: true, $ne: null as unknown as string } },
+        { receiveDailyEmails: { $eq: true }, isDemo: { $ne: true }, email: { $exists: true, $ne: null as unknown as string } },
         { projection: { email: 1, name: 1, id: 1, _id: 1, country: 1 } },
       )
       .toArray()

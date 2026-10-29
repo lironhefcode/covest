@@ -4,6 +4,7 @@ import Navitems from "./Navitems"
 import UserDropdown from "./UserDropdown"
 import AlertsBell from "./AlertsBell"
 import PushNotificationManager from "./PushNotificationManger"
+import DemoBanner from "./DemoBanner"
 
 type HeaderClientProps = {
   initialStocks: StockWithWatchlistStatus[]
@@ -16,6 +17,7 @@ export default function HeaderClient({ initialStocks, watchlistSymbols, user, tr
   return (
     <>
       <PushNotificationManager />
+      {user.isDemo && <DemoBanner />}
       <nav className="hidden sm:block">
         <Navitems watchlistSymbols={watchlistSymbols} initialStocks={initialStocks} />
       </nav>
